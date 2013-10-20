@@ -3,7 +3,7 @@ import XMonad.Layout.LayoutCombinators
 import XMonad.Util.EZConfig(additionalKeys)
 import XMonad.Config.Desktop(desktopLayoutModifiers)
 
-import qualified XMonad.StackSet as W
+import XMonad.StackSet
 import XMonad.Hooks.ManageHelpers
 import XMonad.Layout.NoBorders
 
@@ -27,7 +27,7 @@ main = do
                 { ppOutput = hPutStrLn xmproc,
                   ppTitle = xmobarColor "green" "" . shorten 50
                 },
-      borderWidth = 4,      
+      borderWidth = 4,
       normalBorderColor = "#cccccc",
       focusedBorderColor = "#eb8f00",
       focusFollowsMouse = True -- prøver å bytte
@@ -43,17 +43,19 @@ main = do
       ((mod4Mask, xK_r), spawn "dmenu_run"),
       ((mod1Mask .|. controlMask, xK_Delete), spawn "gnome-system-monitor"),
 
-      ((0, 0x1008ff13), spawn "amixer -c 1 sset Master 4+"),
+      ((0, 0x1008ff13), spawn "amixer -c 1 set Master 4+"),
       ((0, 0x1008ff11), spawn "amixer -c 1 set Master 4-"),
       ((0, 0x1008ff12), spawn "amixer -c 1 set Master 0db"),
-                                                           
-      
+
+
       ((0, 0x1008ff02), spawn "amixer -c 1 set Master 2-"),
       ((0, 0x1008ff03), spawn "amixer -c 1 set Master 2-")
 
     ]
-    
-startup = do    
+
+workspaces = ["web", "emacs", "term"] ++ map show ([4..8] :: [Int]) ++ ["irssi"]
+
+startup = do
   spawn "synaptikscfg load"
   spawn "synaptikscfg init"
 tall = Tall 1 (3/100) (1/2)
