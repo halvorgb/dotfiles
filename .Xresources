@@ -1,13 +1,31 @@
-!Xcursor.theme: whiteglass
-Xcursor.theme: Human
+xterm*SaveLines: 5000
+! Tabbed layout!
+URxvt.perl-ext-common: tabbedex
+URxvt.tabbed.autohide: true
+URxvt.keysym.Control-t: perl:tabbedex:new_tab
+URxvt.keysym.Control-Tab: perl:tabbedex:next_tab
+URxvt.keysym.Control-Shift-Tab: perl:tabbedex:prev_tab
+URxvt.keysym.Control-Shift-Left: perl:tabbedex:move_tab_left
+URxvt.keysym.Control-Shift-Right: perl:tabbedex:move_tab_right
+URxvt.keysym.Shift-Left: perl:tabbedex:prev_tab
+URxvt.keysym.Shift-Right: perl:tabbedex:next_tab
 
-URxvt.scrollBar: false
-URxvt.transparent: false
-!URxvt.shading: 75
+URxvt*.scrollBar: false
+URxvt*.depth: 32
+URxvt*.background: [100]#222222
 
-URxvt.font: xft:Inconsolata:antialias=true:pixelsize=16
-URxvt.boldFont: xft:Inconsolata:style=bold:antialias=true:pixelsize=16
+URxvt*.font: xft:Inconsolata:size=13
+URxvt*.boldFont: xft:Inconsolata:size=13
 
-*background: #222222
-*foreground: #eeeeee
-*cursorColor: #eeee00
+!URxvt*.foreground:  #eeeeee
+!URxvt*.cursorColor: #eeee00
+
+Xft.antialias: true
+Xft.autohint:  false
+Xft.lcdfilter: lcddefault
+Xft.hinting:   true
+Xft.hintstyle: hintfull
+Xft.rgba:      rgb
+!Xft.dpi:       220
+Xft.dpi:       190
+

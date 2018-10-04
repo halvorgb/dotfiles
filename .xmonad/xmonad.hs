@@ -26,6 +26,9 @@ import Data.Maybe
 import Data.List
 import System.IO
 
+
+gridSelectConfig = defaultGSConfig { gs_cellheight = 196, gs_cellwidth = 512 }
+
 myManageHook = composeAll
                [ isFullscreen --> doFloat ]
 
@@ -36,11 +39,11 @@ main = do
 
 myConfig = do
   xmproc <- spawnPipe "/usr/bin/xmobar /home/halvor/.xmobarc.hs"
-  return $ defaultConfig {
+  return $ docks $ defaultConfig {
                modMask = mod4Mask,
-               terminal = "urxvtc",
+               terminal = "urxvtc -sl 10000",
                XMonad.workspaces = myWorkspaces,
-               manageHook = manageSpawn <+> manageDocks <+> myManageHook <+> manageHook defaultConfig,
+               manageHook = manageSpawn <+> myManageHook <+> manageHook defaultConfig,
                layoutHook = avoidStruts $ smartBorders $ layoutHook defaultConfig,  -- $ desktopLayoutModifiers (tall ||| Full),
                logHook = dynamicLogWithPP xmobarPP
                { ppOutput = hPutStrLn xmproc,
@@ -57,7 +60,7 @@ myConfig = do
                borderWidth = 2,
                normalBorderColor = "#cccccc",
                focusedBorderColor = "#eb8f00",
-               focusFollowsMouse = True -- prøver å bytte
+               focusFollowsMouse = False -- prøver å bytte
              } `additionalKeys`
              [ ((mod4Mask .|. shiftMask, xK_z), spawn "xscreensaver-command --lock"),
 
@@ -91,7 +94,7 @@ myConfig = do
                -- slack
                ((mod4Mask .|. shiftMask, xK_i), spawn "chromium --app=http://hooplab.slack.com"),
 
-               ((mod4Mask, xK_g), goToSelected defaultGSConfig),
+               ((mod4Mask, xK_g), goToSelected gridSelectConfig),
 
 
                -- Audio
@@ -110,9 +113,7 @@ myWorkspaces = ["web", "emacs", "term"] ++ map show ([4..7] :: [Int]) ++ ["music
 
 myStartupHook = do
   spawn "killall urxvtd; urxvtd -q -f -o;"
-  spawnOn "chat" "chromium --app=http://p15ntnu.slack.com"
   spawnOn "emacs" "emacs"
-  spawnOn "web" "chromium"
 
 
 tall = Tall 1 (3/100) (1/2)

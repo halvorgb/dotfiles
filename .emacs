@@ -1,53 +1,47 @@
-;; Unbind C-z (minimize/suspend window) because it  doesn't work well with xmonad.
+;; global variables
+(setq
+ inhibit-startup-screen t
+ create-lockfiles nil
+ make-backup-files nil
+ column-number-mode t
+ scroll-error-top-bottom t
+ show-paren-delay 0.5
+ use-package-always-ensure t
+ sentence-end-double-space nil)
+
+;; buffer local variables
+(setq-default
+ indent-tabs-mode nil
+ tab-width 2
+ c-basic-offset 2)
+
+;; modes
+(electric-indent-mode 0)
+
+;; global keybindings
 (global-unset-key (kbd "C-z"))
 
-(global-subword-mode 1)
-
-(defalias 'yes-or-no-p 'y-or-n-p)
-
-(add-to-list 'load-path "~/.emacs.d/emacsAddons/")
-(let ((default-directory "~/.emacs.d/emacsAddons/"))
-  (normal-top-level-add-subdirs-to-load-path))
 ;; the package manager
 (require 'package)
 (setq
- use-package-always-ensure t
  package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
                     ("org" . "http://orgmode.org/elpa/")
-                    ("melpa" . "http://melpa.org/packages/")))
+                    ("melpa" . "http://melpa.org/packages/")
+                    ("melpa-stable" . "http://stable.melpa.org/packages/")))
+
 (package-initialize)
 (when (not package-archive-contents)
   (package-refresh-contents)
   (package-install 'use-package))
 (require 'use-package)
 
-;; magit
-(global-set-key (kbd "C-x g") 'magit-status)
+;; theme paths
+(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/base16/")
+(set-face-attribute 'default nil :font "Inconsolata-13")
 
-;; company mode
-(use-package company
-  :diminish company-mode
-  :commands company-mode
-  :init
-  (setq
-   company-dabbrev-ignore-case nil
-   company-dabbrev-code-ignore-case nil
-   company-dabbrev-downcase nil
-   company-idle-delay 0
-   company-minimum-prefix-length 4)
-  :config
-  ;; disables TAB in company-mode, freeing it for yasnippet
-  (define-key company-active-map [tab] nil))
+(use-package evil
+  :demand)
 
-;; run ensime when opening scala files.
- (add-hook 'scala-mode-hook 'ensime)
-(use-package ensime
-             :commands ensime ensime-mode)
-
-(use-package sbt-mode)
-(use-package scala-mode2)
-
-;; Projectile mode
 (projectile-global-mode)
 ;; auto-reload buffers
 (global-auto-revert-mode t)
@@ -57,28 +51,8 @@
 (setq x-select-enable-clipboard t)
 (setq x-select-enable-primary t)
 
-;; No more tabs
-(setq-default indent-tabs-mode nil)
-(setq-default tabwidth 2)
-(setq-default tab-width 2)
-(defvaralias 'c-basic-offset 'tabwidth)
-(defvaralias 'cperl-indent-level 'tabwidth)
-
-;; theme paths
-(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/emacs-color-theme-solarized/")
-(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/noctilux-theme/")
-(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/base16/")
-(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/mytheme/")
-(add-to-list 'custom-theme-load-path "~/.emacs.d/themes/")
-
-;; eval math in region
-(require 'macro-math)
-(global-set-key "\C-x~" 'macro-math-eval-and-round-region)
-(global-set-key "\C-x=" 'macro-math-eval-region)
-
 ;; smooth scrolling
-(require 'smooth-scroll)
-(smooth-scroll-mode 1)
+;; (pixel-scroll-mode 1)
 
 ;; Hides tool bar and menu bar.
 (tool-bar-mode -1)
@@ -88,65 +62,6 @@
 ;; no more trailing whitespace
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-;; compile tex to pdf
-(setq TeX-PDF-mode t)
-
-
-;; sql mode: default to psql highlight
-(add-to-list 'auto-mode-alist
-             '("\\.sql$" . (lambda ()
-                             (sql-mode)
-                             (sql-highlight-postgres-keywords))))
-
-
-;; set up org-mode
-(require 'org-install)
-(add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-(define-key global-map "\C-cl" 'org-store-link)
-(define-key global-map "\C-ca" 'org-agenda)
-(setq org-log-done t)
-
-;; haskell stuff:
-(add-hook 'haskell-mode-hook 'turn-on-haskell-doc)
-(add-hook 'haskell-mode-hook 'turn-on-haskell-decl-scan)
-
-;; Automatic haskell indentation.
-(require 'hindent)
-(add-hook 'haskell-mode-hook #'hindent-mode)
-;;(setq hindent-style "johan-tibell")
-
-(setq haskell-interactive-popup-errors nil)
-;; haskell-indentation2
-(add-hook 'haskell-mode-hook 'turn-on-hi2)
-(eval-after-load 'haskell-mode '(progn
-  (define-key haskell-mode-map [f8] 'haskell-navigate-imports)
-  (define-key haskell-mode-map [f9] 'haskell-mode-stylish-buffer)))
-
-;; always reload TAGS
-(setq tags-revert-without-query 1)
-
-;; Use hasktags
-(let ((my-cabal-path (expand-file-name "~/.cabal/bin")))
-  (setenv "PATH" (concat my-cabal-path ":" (getenv "PATH")))
-  (add-to-list 'exec-path my-cabal-path))
-
-(eval-after-load 'haskell-mode
-  '(define-key haskell-mode-map (kbd "C-x C-s") (lambda () (interactive)
-                                                  (call-interactively 'save-buffer) (haskell-process-generate-tags))))
-(eval-after-load 'haskell-mode '(progn
-                                  (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-or-reload)
-                                  (define-key haskell-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
-                                  (define-key haskell-mode-map (kbd "C-c C-n C-t") 'haskell-process-do-type)
-                                  (define-key haskell-mode-map (kbd "C-c C-n C-i") 'haskell-process-do-info)
-                                  (define-key haskell-mode-map (kbd "C-c C-n C-c") 'haskell-process-cabal-build)
-                                  (define-key haskell-mode-map (kbd "C-c C-n c") 'haskell-process-cabal)
-                                  (define-key haskell-mode-map (kbd "SPC") 'haskell-mode-contextual-space)))
-(eval-after-load 'haskell-cabal '(progn
-                                   (define-key haskell-cabal-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
-                                   (define-key haskell-cabal-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
-                                   (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
-                                   (define-key haskell-cabal-mode-map (kbd "C-c c") 'haskell-process-cabal)))
-
 ;; highlight parens
 (require 'highlight-parentheses)
 (define-globalized-minor-mode global-highlight-parentheses-mode
@@ -155,17 +70,7 @@
     (highlight-parentheses-mode t)))
 (global-highlight-parentheses-mode t)
 
-(require 'linum) ;; line numbers
-(global-linum-mode 1)
-
-;; storing temporary data in the system's temporary directory instead of the current folder:
-(setq backup-directory-alist
-      `((".*" . ,temporary-file-directory)))
-(setq auto-save-file-name-transforms
-      `((".*" ,temporary-file-directory t)))
-
-(set-face-attribute 'default nil :font"Inconsolata-10")
-
+(global-display-line-numbers-mode 1)
 
 (when (fboundp 'windmove-default-keybindings)
   (windmove-default-keybindings))
@@ -183,12 +88,6 @@
 (setq ido-enable-flex-matching t) ; fuzzy matching
 (setq ido-auto-merge-work-directories-length -1) ; stay the fuck out of my current folder
 
-(setq tramp-default-method "ssh")
-;; transparancy
-;; (set-frame-parameter (selected-frame) 'alpha '(<active> [<inactive>]))
-;; (set-frame-parameter (selected-frame) 'alpha '(85 85))
-;; (add-to-list 'default-frame-alist '(alpha 85 85))
-
 ;; expand region!
 (require 'expand-region)
 (global-set-key (kbd "C-æ") 'er/expand-region)
@@ -202,37 +101,50 @@
 (global-set-key (kbd "M-x") 'smex)
 (global-set-key (kbd "<menu>") 'smex)
 
+;; evil
 (setq evil-want-C-u-scroll t)
 (require 'evil)
 (evil-mode 1)
 (define-key evil-normal-state-map "ø" 'evil-beginning-of-line)
 (define-key evil-normal-state-map "æ" 'evil-end-of-line)
 
+;; reformatting strings from camelCase to snake_case ++
+(require 'string-inflection)
+(global-set-key (kbd "C-å") 'string-inflection-all-cycle)
 
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+;; scala stuff:
+; ensime
+(use-package ensime
+  :ensure t
+  :pin melpa-stable)
+(add-to-list 'exec-path "/usr/bin")
+
+(defun sql-beautify (beg end)
+  (interactive "r")
+  (shell-command-on-region
+   beg end
+   "python -c 'import sys, sqlparse; print(sqlparse.format(sys.stdin.read(), reindent=True))'"
+   t t))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(ansi-color-names-vector
-   ["#2b2b2b" "#da4939" "#a5c261" "#ffc66d" "#6d9cbe" "#b6b3eb" "#6d9cbe" "#e6e1dc"])
+   ["#19171c" "#be4678" "#2a9292" "#a06e3b" "#576ddb" "#955ae7" "#576ddb" "#8b8792"])
  '(ansi-term-color-vector
-   [unspecified "#2b2b2b" "#da4939" "#a5c261" "#ffc66d" "#6d9cbe" "#b6b3eb" "#519f50" "#f9f7f3"])
- '(custom-enabled-themes (quote (base16-halvorgb-railscasts)))
+   [unspecified "#19171c" "#be4678" "#2a9292" "#a06e3b" "#576ddb" "#955ae7" "#576ddb" "#8b8792"])
+ '(custom-enabled-themes (quote (base16-unikitty-dark)))
  '(custom-safe-themes
    (quote
-    ("67b6ff0b4786c485ea606167da3b963a35ba37406017c4f50754dcd16230b75b" "4cc014287035b11d1f8d45af1ff18f3509496a760650d16c7771ac9bdf16b1a6" "0240d45644b370b0518e8407f5990a243c769fb0150a7e74297e6f7052a04a72" "37783713b151d949b0da66ff7cd8736dd0893089cbad12eb5a71f3a72e201b47" "8a36587d6cbcc30c85372568ed29d45ec393a32e3c779cba8cfd5fade229025d" "3539b3cc5cbba41609117830a79f71309a89782f23c740d4a5b569935f9b7726" "fe6fb0cb1aa50dc563d81aad98c470a30f4e89db6d55a108f1083f33317ad413" "73ae6088787f6f72ef52f19698b25bc6f0edf47b9e677bf0a85e3a1e8a7a3b17" "f0e69da2cf73c7f153fc09ed3e0ba6e1fd670fec09b8a6a8ed7b4f9efea3b501" "17fd8388e49d3055185e817ed3a2b7c955a2dda92b990f475c14a8e1d97dbe4b" "cc495c40747ae22dd2de6e250cbd9a408e3588b59989368af565deeeff334126" "d72836155cd3b3e52fd86a9164120d597cbe12a67609ab90effa54710b2ac53b" "17f35b689dd41e49cb740bfb810ac8a53d13292cbebf68f41f772787d8b3aebf" "e7ec0cc3ce134cc0bd420b98573bbd339a908ac24162b8034c98e1ba5ee1f9f6" "a27c00821ccfd5a78b01e4f35dc056706dd9ede09a8b90c6955ae6a390eb1c1e" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" "5153bfc712cc864558306f2a824b9ea52795e62aefc0960c13a8b6cad53aadb9" "3fd36152f5be7e701856c3d817356f78a4b1f4aefbbe8bbdd1ecbfa557b50006" "4b82ebe1275ead296aa283cf3c079b9e47f2e3f47309f602d863ceb18498c98c" "764e3a6472a3a4821d929cdbd786e759fab6ef6c2081884fca45f1e1e3077d1d" default)))
- '(haskell-process-auto-import-loaded-modules t)
- '(haskell-process-log t)
- '(haskell-process-suggest-remove-import-lines t)
- '(haskell-tags-on-save t)
- '(inhibit-startup-screen t)
- '(line-number-mode nil)
- '(linum-format "%i")
- '(safe-local-variable-values (quote ((TeX-master . "../main")))))
+    ("3de3f36a398d2c8a4796360bfce1fa515292e9f76b655bb9a377289a6a80a132" "3380a2766cf0590d50d6366c5a91e976bdc3c413df963a0ab9952314b4577299" "aded4ec996e438a5e002439d58f09610b330bbc18f580c83ebaba026bbef6c82" "60e09d2e58343186a59d9ed52a9b13d822a174b33f20bdc1d4abb86e6b17f45b" "ffac21ab88a0f4603969a24b96993bd73a13fe0989db7ed76d94c305891fad64" "41eb3fe4c6b80c7ad156a8c52e9dd6093e8856c7bbf2b92cc3a4108ceb385087" "3e34e9bf818cf6301fcabae2005bba8e61b1caba97d95509c8da78cff5f2ec8e" "760ce657e710a77bcf6df51d97e51aae2ee7db1fba21bbad07aab0fa0f42f834" "b3bcf1b12ef2a7606c7697d71b934ca0bdd495d52f901e73ce008c4c9825a3aa" "04790c9929eacf32d508b84d34e80ad2ee233f13f17767190531b8b350b9ef22" "daa7ac1dde9d089a998fa2f90c19354fc4ef12bcfd312aca1bcf003a7c381501" "e1498b2416922aa561076edc5c9b0ad7b34d8ff849f335c13364c8f4276904f0" "aeb698d431751b18153e89b5f838fc3992433780a39a082740db216c7202a1c9" "a62f0662e6aa7b05d0b4493a8e245ab31492765561b08192df61c9d1c7e1ddee" "25c242b3c808f38b0389879b9cba325fb1fa81a0a5e61ac7cae8da9a32e2811b" "c11421683c971b41d154b1a4ef20a2c800537b72fefa618b50b184bbfe6b48a0" "36746ad57649893434c443567cb3831828df33232a7790d232df6f5908263692" "34ed3e2fa4a1cb2ce7400c7f1a6c8f12931d8021435bad841fdc1192bd1cc7da" "542e6fee85eea8e47243a5647358c344111aa9c04510394720a3108803c8ddd1" "250268d5c0b4877cc2b7c439687f8145a2c85a48981f7070a72c7f47a2d2dc13" "a85e40c7d2df4a5e993742929dfd903899b66a667547f740872797198778d7b5" "1d079355c721b517fdc9891f0fda927fe3f87288f2e6cc3b8566655a64ca5453" "cabc32838ccceea97404f6fcb7ce791c6e38491fd19baa0fcfb336dcc5f6e23c" "9be1d34d961a40d94ef94d0d08a364c3d27201f3c98c9d38e36f10588469ea57" default)))
+ '(package-selected-packages
+   (quote
+    (redis elm-mode rust-mode toml-mode clojure-mode dockerfile-mode string-inflection csv-mode yaml-mode haskell-mode terraform-mode lua-mode json-mode ensime use-package sql-indent smooth-scroll smex scala-mode sbt-mode projectile markdown-mode macro-math ido-vertical-mode highlight-parentheses groovy-mode expand-region evil company base16-theme))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
