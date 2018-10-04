@@ -146,8 +146,12 @@
 (use-package base16-theme
   :ensure t
   :config
-  (load-theme 'base16-railscasts t)
+  (load-theme 'base16-woodland t)
 )
+
+(use-package markdown-mode)
+
+;; sup
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
